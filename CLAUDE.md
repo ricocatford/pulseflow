@@ -20,7 +20,7 @@
 - **Functional over imperative:** Use pure functions, avoid classes unless necessary
 - **Strictly typed interfaces:** Define explicit TypeScript interfaces for all data structures; no implicit `any`
 - **UI Components:** Use Shadcn/UI for all user-facing components
-- **Icons:** Use Lucide-React exclusively
+- **Icons:** Use @tabler/icons-react exclusively
 - **Naming:**
   - Components: PascalCase (`SignalCard.tsx`)
   - Utilities/hooks: camelCase (`useSignalMonitor.ts`)
