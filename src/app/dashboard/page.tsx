@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UserMenu } from "@/components/features/UserMenu";
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
@@ -26,7 +27,7 @@ export default async function DashboardPage() {
             <IconActivity className="h-6 w-6" />
             <span className="text-xl font-semibold">PulseFlow</span>
           </div>
-          <span className="text-sm text-muted-foreground">{user.email}</span>
+          <UserMenu email={user.email ?? ""} />
         </div>
       </header>
 
