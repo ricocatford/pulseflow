@@ -10,6 +10,49 @@ interface SignInResult {
   url: string;
 }
 
+interface SignUpData {
+  email: string;
+  password: string;
+}
+
+interface SignUpResult {
+  message: string;
+}
+
+export async function signUpWithEmail(
+  data: SignUpData
+): Promise<Result<SignUpResult>> {
+  const supabase = await createSupabaseServerClient();
+
+  const { error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+  });
+
+  if (error) {
+    return err(new AppError(error.message, "AUTH_ERROR", 400));
+  }
+
+  return ok({ message: "Account created successfully" });
+}
+
+export async function signInWithEmail(
+  data: SignUpData
+): Promise<Result<SignUpResult>> {
+  const supabase = await createSupabaseServerClient();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: data.email,
+    password: data.password,
+  });
+
+  if (error) {
+    return err(new AppError(error.message, "AUTH_ERROR", 401));
+  }
+
+  return ok({ message: "Signed in successfully" });
+}
+
 export async function signInWithProvider(
   provider: OAuthProvider
 ): Promise<Result<SignInResult>> {
