@@ -5,12 +5,24 @@ import {
   getProviderForStrategy,
   ScraperStrategy,
 } from "@/services/scrapers";
+import {
+  getDefaultLLMProvider,
+  getContentTypeFromStrategy,
+  isLLMAvailable,
+} from "@/services/llm";
 
 interface ScrapeSignalEvent {
   data: {
     signalId: string;
     dryRun?: boolean;
   };
+}
+
+interface SerializedScrapedItem {
+  title: string;
+  url: string;
+  content?: string;
+  author?: string;
 }
 
 export const scrapeSignal = inngest.createFunction(
@@ -59,6 +71,28 @@ export const scrapeSignal = inngest.createFunction(
       });
     });
 
+    // Step 4: Summarize content (if scrape succeeded and LLM is available)
+    let summaryText: string | null = null;
+
+    if (result.success && result.data.items.length > 0 && isLLMAvailable()) {
+      const summaryResult = await step.run("summarize-content", async () => {
+        const llmProvider = getDefaultLLMProvider();
+        const contentToSummarize = prepareContentForSummary(result.data.items);
+        const contentType = getContentTypeFromStrategy(result.data.provider);
+
+        return llmProvider.summarize({
+          content: contentToSummarize,
+          contentType,
+          dryRun,
+          maxLength: 500,
+        });
+      });
+
+      if (summaryResult.success) {
+        summaryText = summaryResult.data.summary;
+      }
+    }
+
     // Step 5: Store pulse and update signal
     const pulse = await step.run("store-pulse", async () => {
       const pulseData = {
@@ -66,6 +100,7 @@ export const scrapeSignal = inngest.createFunction(
         rawData: result.success
           ? JSON.stringify(result.data.items)
           : JSON.stringify({ error: result.error.message }),
+        summary: summaryText,
         status: result.success ? "SUCCESS" : "FAILED",
       };
 
@@ -88,7 +123,26 @@ export const scrapeSignal = inngest.createFunction(
       pulseId: pulse.id,
       itemCount: result.success ? result.data.items.length : 0,
       provider: result.success ? result.data.provider : null,
+      summarized: summaryText !== null,
       dryRun,
     };
   }
 );
+
+/**
+ * Prepare scraped items for summarization
+ */
+function prepareContentForSummary(items: SerializedScrapedItem[]): string {
+  return items
+    .map((item, index) => {
+      const parts = [`${index + 1}. ${item.title}`];
+      if (item.content) {
+        parts.push(item.content);
+      }
+      if (item.author) {
+        parts.push(`Author: ${item.author}`);
+      }
+      return parts.join("\n");
+    })
+    .join("\n\n");
+}

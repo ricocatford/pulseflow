@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       if (user?.email) {
         await prisma.user.upsert({
           where: { email: user.email },
-          update: {}, // No updates needed if exists
+          update: {},
           create: {
             id: user.id,
             email: user.email,

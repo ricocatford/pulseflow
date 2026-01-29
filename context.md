@@ -23,6 +23,32 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 
 ## Current State
 
+### Phase 2: LLM Service - COMPLETE
+
+1. **LLM Infrastructure** (`src/services/llm/infrastructure/`)
+   - `geminiClient.ts` - Gemini API client with availability check
+
+2. **LLM Providers** (`src/services/llm/providers/`)
+   - `baseProvider.ts` - Provider factory with shared logic
+   - `geminiProvider.ts` - Google Gemini implementation
+
+3. **Prompts** (`src/services/llm/prompts/`)
+   - `summarize.ts` - Context-aware summarization prompts by content type
+
+4. **Types & Constants** (`src/services/llm/`)
+   - `types.ts` - ILLMProvider interface, SummarizeOptions, SummaryResult
+   - `constants.ts` - Model config, token limits, error codes
+   - `index.ts` - Public exports and provider registry
+
+5. **Environment Variables** (`src/lib/env.ts`)
+   - Typed environment variable access with validation
+   - `GEMINI_API_KEY` for LLM provider
+
+6. **Inngest Integration**
+   - Added LLM summarization step to `scrapeSignal` function
+   - Stores summary in Pulse record after successful scrape
+   - Graceful degradation when LLM unavailable
+
 ### Phase 1: Scraper Service - COMPLETE
 
 1. **Scraper Infrastructure** (`src/services/scrapers/infrastructure/`)
@@ -83,15 +109,7 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 
 ## Pending Tasks
 
-### Phase 2: LLM Service (Next)
-
-1. **LLM Integration** - `src/services/llm/`
-   - Claude API client setup
-   - Change summarization prompts
-   - Diff analysis between pulses
-   - Token usage tracking
-
-### Phase 3: Alert Service
+### Phase 3: Alert Service (Next)
 
 2. **Alert Generation** - `src/services/alerts/`
    - Significant change detection
@@ -149,7 +167,10 @@ src/
 │   │   ├── infrastructure/ # Rate limiter, robots, HTTP
 │   │   ├── providers/      # RSS, Reddit, HN, HTML
 │   │   └── registry/       # Provider factory
-│   ├── llm/                # TODO - LLM integration
+│   ├── llm/                # COMPLETE - LLM integration
+│   │   ├── infrastructure/ # Gemini API client
+│   │   ├── providers/      # Gemini provider
+│   │   └── prompts/        # Summarization prompts
 │   └── alerts/             # TODO - Alert delivery
 └── hooks/                  # Custom React hooks
 ```
@@ -180,6 +201,23 @@ interface IScraperProvider {
   canHandle(url: string): boolean;
   scrape(options: ScraperOptions): Promise<Result<ScrapeResult>>;
 }
+
+// LLM summarize options
+interface SummarizeOptions {
+  content: string;
+  dryRun?: boolean;
+  maxRetries?: number;   // Default: 3
+  contentType?: ContentType;  // RSS, SOCIAL, ARTICLE, GENERIC
+  maxLength?: number;    // Default: 500
+}
+
+// LLM provider contract
+interface ILLMProvider {
+  readonly provider: LLMProvider;
+  readonly model: string;
+  summarize(options: SummarizeOptions): Promise<Result<SummaryResult>>;
+  isAvailable(): boolean;
+}
 ```
 
 ## Inngest Events
@@ -191,11 +229,11 @@ interface IScraperProvider {
 ## Git History (Recent)
 
 ```
+(pending) feat(llm): add LLM service with Gemini provider and Inngest integration
+2b5b4d3 docs: update context.md with Phase 1 completion and next steps
 ef26d61 feat(auth): sync Supabase Auth users to Prisma database
 e70f424 feat(scraper): add scraper service with 4 providers and Inngest integration
 9e5f627 feat(ui): add UserMenu component and browser Supabase client
-843fb9c feat(auth): add email/password authentication
-fbb6a6f feat(auth): add Supabase OAuth authentication
 ```
 
 ## Commands
