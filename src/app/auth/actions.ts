@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { AppError, err, ok, Result } from "@/lib/errors";
 
 type OAuthProvider = "google" | "facebook";
@@ -24,13 +25,25 @@ export async function signUpWithEmail(
 ): Promise<Result<SignUpResult>> {
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data: authData, error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
   });
 
   if (error) {
     return err(new AppError(error.message, "AUTH_ERROR", 400));
+  }
+
+  // Sync user to Prisma database
+  if (authData.user?.email) {
+    await prisma.user.upsert({
+      where: { email: authData.user.email },
+      update: {},
+      create: {
+        id: authData.user.id,
+        email: authData.user.email,
+      },
+    });
   }
 
   return ok({ message: "Account created successfully" });
@@ -41,13 +54,25 @@ export async function signInWithEmail(
 ): Promise<Result<SignUpResult>> {
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: data.email,
     password: data.password,
   });
 
   if (error) {
     return err(new AppError(error.message, "AUTH_ERROR", 401));
+  }
+
+  // Sync user to Prisma database
+  if (authData.user?.email) {
+    await prisma.user.upsert({
+      where: { email: authData.user.email },
+      update: {},
+      create: {
+        id: authData.user.id,
+        email: authData.user.email,
+      },
+    });
   }
 
   return ok({ message: "Signed in successfully" });
