@@ -17,17 +17,27 @@ model User {
   signals       Signal[]
 }
 
+enum ScraperStrategy {
+  RSS
+  REDDIT
+  HACKERNEWS
+  HTML
+  AUTO
+}
+
 model Signal {
-  id            String   @id @default(cuid())
-  name          String   // e.g., "Competitor Pricing"
+  id            String          @id @default(cuid())
+  name          String          // e.g., "Competitor Pricing"
   url           String
-  selector      String?  // The CSS selector to scrape
-  interval      Int      @default(60) // Minutes between scrapes
+  selector      String?         // The CSS selector to scrape
+  strategy      ScraperStrategy @default(AUTO)
+  interval      Int             @default(60) // Minutes between scrapes
   userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
   pulses        Pulse[]
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
+  isActive      Boolean         @default(true)
+  lastScrapedAt DateTime?
+  createdAt     DateTime        @default(now())
 }
 
 model Pulse {
