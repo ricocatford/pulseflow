@@ -15,7 +15,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "inngest:dev": "npx inngest-cli dev",
+    "dev:all": "concurrently --names \"next,inngest,prisma\" --prefix-colors \"cyan,magenta,yellow\" \"npm run dev\" \"npm run inngest:dev\" \"npm run db:studio\""
   },
   "repository": {
     "type": "git",
@@ -64,6 +66,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.23",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.6",
     "postcss": "^8.5.6",

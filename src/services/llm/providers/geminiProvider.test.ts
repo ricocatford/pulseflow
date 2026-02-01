@@ -4,7 +4,7 @@ import { LLMProvider } from "../types";
 // Mock the gemini client module
 vi.mock("../infrastructure/geminiClient", () => ({
   isGeminiAvailable: vi.fn(),
-  getModelName: vi.fn().mockReturnValue("gemini-1.5-flash"),
+  getModelName: vi.fn().mockReturnValue("gemini-2.0-flash"),
   generateContent: vi.fn(),
 }));
 
@@ -24,7 +24,7 @@ describe("geminiProvider", () => {
     });
 
     it("should have correct model name", () => {
-      expect(geminiProvider.model).toBe("gemini-1.5-flash");
+      expect(geminiProvider.model).toBe("gemini-2.0-flash");
     });
   });
 
@@ -68,7 +68,7 @@ describe("geminiProvider", () => {
       if (result.success) {
         expect(result.data.summary).toBe("This is a test summary.");
         expect(result.data.provider).toBe(LLMProvider.GEMINI);
-        expect(result.data.model).toBe("gemini-1.5-flash");
+        expect(result.data.model).toBe("gemini-2.0-flash");
         expect(result.data.tokensUsed).toBe(50);
         expect(result.data.dryRun).toBe(false);
       }
