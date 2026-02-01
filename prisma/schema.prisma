@@ -26,18 +26,19 @@ enum ScraperStrategy {
 }
 
 model Signal {
-  id            String          @id @default(cuid())
-  name          String          // e.g., "Competitor Pricing"
-  url           String
-  selector      String?         // The CSS selector to scrape
-  strategy      ScraperStrategy @default(AUTO)
-  interval      Int             @default(60) // Minutes between scrapes
-  userId        String
-  user          User            @relation(fields: [userId], references: [id])
-  pulses        Pulse[]
-  isActive      Boolean         @default(true)
-  lastScrapedAt DateTime?
-  createdAt     DateTime        @default(now())
+  id                String             @id @default(cuid())
+  name              String             // e.g., "Competitor Pricing"
+  url               String
+  selector          String?            // The CSS selector to scrape
+  strategy          ScraperStrategy    @default(AUTO)
+  interval          Int                @default(60) // Minutes between scrapes
+  userId            String
+  user              User               @relation(fields: [userId], references: [id])
+  pulses            Pulse[]
+  alertDestinations AlertDestination[]
+  isActive          Boolean            @default(true)
+  lastScrapedAt     DateTime?
+  createdAt         DateTime           @default(now())
 }
 
 model Pulse {
@@ -47,5 +48,50 @@ model Pulse {
   rawData       String   @db.Text
   summary       String?  @db.Text
   status        String   // "SUCCESS" or "FAILED"
+  alerts        Alert[]
   createdAt     DateTime @default(now())
+}
+
+// Alert-related enums
+enum AlertChannel {
+  EMAIL
+  WEBHOOK
+}
+
+enum AlertStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum ChangeType {
+  NEW_ITEMS
+  REMOVED
+  UPDATED
+  MIXED
+}
+
+model AlertDestination {
+  id          String       @id @default(cuid())
+  signalId    String
+  signal      Signal       @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  channel     AlertChannel
+  destination String       // Email address or webhook URL
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+
+  @@unique([signalId, channel, destination])
+}
+
+model Alert {
+  id            String      @id @default(cuid())
+  pulseId       String
+  pulse         Pulse       @relation(fields: [pulseId], references: [id])
+  changeType    ChangeType
+  changeSummary String      @db.Text
+  changeDetails String      @db.Text  // JSON diff
+  status        AlertStatus @default(PENDING)
+  deliveredAt   DateTime?
+  errorMessage  String?
+  createdAt     DateTime    @default(now())
 }

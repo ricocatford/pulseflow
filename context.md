@@ -1,6 +1,6 @@
 # PulseFlow - Project Context
 
-> Last updated: 2026-01-29
+> Last updated: 2026-02-01
 
 ## Project Vision
 
@@ -22,6 +22,41 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 | State | nuqs (URL state) |
 
 ## Current State
+
+### Phase 3: Alert Service - COMPLETE
+
+1. **Alert Infrastructure** (`src/services/alerts/infrastructure/`)
+   - `changeDetector.ts` - Detects added/removed/updated items between scrapes
+   - `emailClient.ts` - Resend SDK wrapper for sending emails
+
+2. **Alert Providers** (`src/services/alerts/providers/`)
+   - `baseProvider.ts` - Provider factory with retry, dry-run, validation
+   - `webhookProvider.ts` - JSON POST with timeout and X-PulseFlow-Event header
+   - `emailProvider.ts` - HTML/text email via Resend
+
+3. **Email Templates** (`src/services/alerts/templates/`)
+   - `alertEmail.ts` - HTML and plain-text alert templates
+
+4. **Types & Constants** (`src/services/alerts/`)
+   - `types.ts` - IAlertProvider, ChangeDetectionResult, AlertOptions
+   - `constants.ts` - Timeouts, retry delays, error codes
+   - `index.ts` - Public exports
+
+5. **Database Models** (`prisma/schema.prisma`)
+   - `AlertChannel` enum (EMAIL, WEBHOOK)
+   - `AlertStatus` enum (PENDING, SENT, FAILED)
+   - `ChangeType` enum (NEW_ITEMS, REMOVED, UPDATED, MIXED)
+   - `AlertDestination` model - per-signal notification destinations
+   - `Alert` model - delivery history with status tracking
+
+6. **Inngest Integration**
+   - Added `detect-changes` step to compare with previous pulse
+   - Added `send-alerts` step to deliver to all active destinations
+   - Records alert status in database
+
+7. **Environment Variables** (`src/lib/env.ts`)
+   - `RESEND_API_KEY` for email delivery
+   - `EMAIL_FROM` for sender address
 
 ### Phase 2: LLM Service - COMPLETE
 
@@ -80,8 +115,8 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 
 6. **Testing Setup**
    - Vitest configured with path aliases
-   - 33 unit tests passing
-   - Coverage for rate limiter, registry, factory, base provider
+   - 122 unit tests passing
+   - Coverage for all services (scrapers, llm, alerts)
 
 ### Previously Completed
 
@@ -109,14 +144,7 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 
 ## Pending Tasks
 
-### Phase 3: Alert Service (Next)
-
-2. **Alert Generation** - `src/services/alerts/`
-   - Significant change detection
-   - Alert creation and storage
-   - Delivery mechanisms (email, webhook)
-
-### Phase 4: Signal Management UI
+### Phase 4: Signal Management UI (Next)
 
 3. **Signal CRUD**
    - Create signal form (URL, selector, interval, strategy)
@@ -171,7 +199,10 @@ src/
 │   │   ├── infrastructure/ # Gemini API client
 │   │   ├── providers/      # Gemini provider
 │   │   └── prompts/        # Summarization prompts
-│   └── alerts/             # TODO - Alert delivery
+│   └── alerts/             # COMPLETE - Alert delivery
+│       ├── infrastructure/ # Change detector, email client
+│       ├── providers/      # Webhook, email providers
+│       └── templates/      # Email templates
 └── hooks/                  # Custom React hooks
 ```
 
@@ -218,6 +249,22 @@ interface ILLMProvider {
   summarize(options: SummarizeOptions): Promise<Result<SummaryResult>>;
   isAvailable(): boolean;
 }
+
+// Alert change detection options
+interface ChangeDetectionOptions {
+  previous: ComparableItem[];
+  current: ComparableItem[];
+  minNewItems?: number;      // Default: 1
+  detectRemovals?: boolean;  // Default: false
+  detectUpdates?: boolean;   // Default: false
+}
+
+// Alert provider contract
+interface IAlertProvider {
+  readonly channel: AlertChannel;
+  send(options: AlertOptions): Promise<Result<AlertDeliveryResult>>;
+  validateDestination(destination: string): boolean;
+}
 ```
 
 ## Inngest Events
@@ -229,7 +276,8 @@ interface ILLMProvider {
 ## Git History (Recent)
 
 ```
-(pending) feat(llm): add LLM service with Gemini provider and Inngest integration
+e5e9778 feat(llm): upgrade to gemini-2.0-flash and add dev scripts
+99d4b1f feat(llm): add LLM service with Gemini provider and Inngest integration
 2b5b4d3 docs: update context.md with Phase 1 completion and next steps
 ef26d61 feat(auth): sync Supabase Auth users to Prisma database
 e70f424 feat(scraper): add scraper service with 4 providers and Inngest integration
