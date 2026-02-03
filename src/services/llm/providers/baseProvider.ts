@@ -203,8 +203,12 @@ export function createBaseProvider(config: LLMProviderConfig): ILLMProvider {
             lastError.message
           );
 
-          // Don't retry auth errors
-          if (lastError.code === LLM_ERROR_CODES.AUTH_ERROR) {
+          // Don't retry auth errors or rate limit errors
+          // Rate limits need 30-60+ seconds to reset, retrying quickly makes it worse
+          if (
+            lastError.code === LLM_ERROR_CODES.AUTH_ERROR ||
+            lastError.code === LLM_ERROR_CODES.RATE_LIMIT
+          ) {
             return err(lastError);
           }
 

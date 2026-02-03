@@ -207,7 +207,7 @@ describe("LLM baseProvider", () => {
       let attempts = 0;
       const provider = createBaseProvider({
         provider: LLMProvider.GEMINI,
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         isAvailableFn: () => true,
         summarizeFn: async () => {
           attempts++;
@@ -226,13 +226,37 @@ describe("LLM baseProvider", () => {
         expect(result.error.code).toBe(LLM_ERROR_CODES.AUTH_ERROR);
       }
     });
+
+    it("should not retry on rate limit errors", async () => {
+      let attempts = 0;
+      const provider = createBaseProvider({
+        provider: LLMProvider.GEMINI,
+        model: "gemini-2.0-flash",
+        isAvailableFn: () => true,
+        summarizeFn: async () => {
+          attempts++;
+          throw new Error("Rate limit exceeded - too many requests");
+        },
+      });
+
+      const result = await provider.summarize({
+        content: "A".repeat(100),
+        maxRetries: 3,
+      });
+
+      expect(attempts).toBe(1);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.code).toBe(LLM_ERROR_CODES.RATE_LIMIT);
+      }
+    });
   });
 
   describe("error mapping", () => {
     it("should map rate limit errors correctly", async () => {
       const provider = createBaseProvider({
         provider: LLMProvider.GEMINI,
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash",
         isAvailableFn: () => true,
         summarizeFn: async () => {
           throw new Error("Rate limit exceeded");
@@ -241,13 +265,13 @@ describe("LLM baseProvider", () => {
 
       const result = await provider.summarize({
         content: "A".repeat(100),
-        maxRetries: 1,
+        maxRetries: 3,
       });
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        // After retries exhausted, we get SUMMARIZE_FAILED with the rate limit error in message
-        expect(result.error.code).toBe(LLM_ERROR_CODES.SUMMARIZE_FAILED);
+        // Rate limit errors should not be retried and return immediately
+        expect(result.error.code).toBe(LLM_ERROR_CODES.RATE_LIMIT);
         expect(result.error.message).toContain("rate limit");
       }
     });

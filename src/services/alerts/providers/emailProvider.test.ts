@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createEmailProvider, emailProvider } from "./emailProvider";
 import { AlertChannel, AlertOptions, ChangeType } from "../types";
 import { ALERT_ERROR_CODES } from "../constants";

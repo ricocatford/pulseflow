@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createBaseProvider } from "./baseProvider";
 import { AlertChannel, AlertOptions, ChangeType } from "../types";
-import { ok, err, AppError } from "@/lib/errors";
+import { ok } from "@/lib/errors";
 import { ALERT_ERROR_CODES } from "../constants";
 
 describe("baseProvider", () => {
