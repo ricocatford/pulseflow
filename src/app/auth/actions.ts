@@ -20,14 +20,30 @@ interface SignUpResult {
   message: string;
 }
 
+function getOrigin(headersList: Awaited<ReturnType<typeof headers>>): string {
+  const origin = headersList.get("origin");
+  if (origin) return origin;
+
+  const forwardedHost = headersList.get("x-forwarded-host") ?? headersList.get("host");
+  const forwardedProto = headersList.get("x-forwarded-proto") ?? "https";
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`;
+
+  return "";
+}
+
 export async function signUpWithEmail(
   data: SignUpData
 ): Promise<Result<SignUpResult>> {
   const supabase = await createSupabaseServerClient();
+  const headersList = await headers();
+  const origin = getOrigin(headersList);
 
   const { data: authData, error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
   });
 
   if (error) {
@@ -83,7 +99,7 @@ export async function signInWithProvider(
 ): Promise<Result<SignInResult>> {
   const supabase = await createSupabaseServerClient();
   const headersList = await headers();
-  const origin = headersList.get("origin") ?? headersList.get("host") ?? "";
+  const origin = getOrigin(headersList);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,

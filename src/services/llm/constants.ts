@@ -3,7 +3,7 @@
  */
 
 // Model settings
-export const GEMINI_MODEL = "gemini-2.0-flash";
+export const GEMINI_MODEL = "gemini-2.5-flash-lite";
 export const DEFAULT_MAX_TOKENS = 500;
 export const DEFAULT_TEMPERATURE = 0.3;
 
