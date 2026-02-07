@@ -30,12 +30,16 @@ function isRedditUrl(url: string): boolean {
 
 function toJsonUrl(url: string): string {
   const parsed = new URL(url);
+  // Use old.reddit.com — www.reddit.com blocks unauthenticated .json requests
+  parsed.hostname = "old.reddit.com";
   // Remove trailing slash and add .json
   let path = parsed.pathname.replace(/\/$/, "");
   if (!path.endsWith(".json")) {
     path += ".json";
   }
   parsed.pathname = path;
+  // raw_json=1 prevents Reddit from HTML-encoding characters in responses
+  parsed.searchParams.set("raw_json", "1");
   return parsed.toString();
 }
 
@@ -74,4 +78,8 @@ export const redditProvider: IScraperProvider = createBaseProvider({
   strategy: ScraperStrategy.REDDIT,
   canHandleFn: isRedditUrl,
   scrapeFn: scrapeReddit,
+  // Reddit's .json API is a public structured data endpoint, not HTML scraping.
+  // Reddit's robots.txt blocks generic bots from all paths, but the JSON API
+  // is explicitly intended for programmatic access.
+  skipRobotsCheck: true,
 });

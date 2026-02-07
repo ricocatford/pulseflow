@@ -34,10 +34,12 @@ export interface BaseProviderConfig {
   strategy: ScraperStrategy;
   canHandleFn: (url: string) => boolean;
   scrapeFn: (options: ScraperOptions) => Promise<Result<ScrapeResult>>;
+  /** Skip robots.txt check for providers that use structured APIs rather than scraping HTML */
+  skipRobotsCheck?: boolean;
 }
 
 export function createBaseProvider(config: BaseProviderConfig): IScraperProvider {
-  const { strategy, canHandleFn, scrapeFn } = config;
+  const { strategy, canHandleFn, scrapeFn, skipRobotsCheck = false } = config;
 
   return {
     strategy,
@@ -76,17 +78,19 @@ export function createBaseProvider(config: BaseProviderConfig): IScraperProvider
         );
       }
 
-      // Check robots.txt
-      const allowed = await isUrlAllowed(url);
-      if (!allowed) {
-        return err(
-          new AppError(
-            `URL disallowed by robots.txt: ${url}`,
-            "ROBOTS_DISALLOWED",
-            403,
-            { url }
-          )
-        );
+      // Check robots.txt (skip for providers using structured APIs)
+      if (!skipRobotsCheck) {
+        const allowed = await isUrlAllowed(url);
+        if (!allowed) {
+          return err(
+            new AppError(
+              `URL disallowed by robots.txt: ${url}`,
+              "ROBOTS_DISALLOWED",
+              403,
+              { url }
+            )
+          );
+        }
       }
 
       // Apply rate limiting

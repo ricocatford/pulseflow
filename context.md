@@ -1,6 +1,6 @@
 # PulseFlow - Project Context
 
-> Last updated: 2026-02-01
+> Last updated: 2026-02-04
 
 ## Project Vision
 
@@ -22,6 +22,46 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 | State | nuqs (URL state) |
 
 ## Current State
+
+### Phase 4: Signal Management UI & Dashboard - COMPLETE
+
+1. **Dashboard Pages** (`src/app/dashboard/`)
+   - `layout.tsx` - Authenticated layout with sidebar navigation (Overview, Signals, Settings)
+   - `page.tsx` - Overview with StatsCards and RecentActivity
+   - `signals/page.tsx` - Signal list with search, status filter, pagination (10 per page)
+   - `signals/[id]/page.tsx` - Signal detail with config sidebar and PulseTimeline
+   - `pulses/[id]/page.tsx` - Pulse detail with AI summary, PulseDiffView, and raw data
+
+2. **Signal Components** (`src/components/features/signals/`)
+   - `SignalForm.tsx` - Create/edit form (name, URL, strategy, interval, CSS selector)
+   - `SignalFormDialog.tsx` - Dialog wrapper for SignalForm
+   - `SignalTable.tsx` - Responsive table with inline actions (edit, trigger, toggle, delete)
+   - `SignalFilters.tsx` - Search input and status filter using URL state
+   - `SignalPagination.tsx` - Page navigation with total count
+   - `SignalStatusBadge.tsx` - Active/Inactive badge
+   - `StrategyBadge.tsx` - Color-coded strategy labels
+   - `TriggerScrapeButton.tsx` - Manual scrape trigger via Inngest
+
+3. **Pulse Components** (`src/components/features/pulses/`)
+   - `PulseTimeline.tsx` - Timeline visualization with status icons and summaries
+   - `PulseDiffView.tsx` - Tabbed diff view (Changes, All Items, Raw Data) with added/removed/unchanged items
+   - `PulseStatusBadge.tsx` - SUCCESS/FAILED badge
+
+4. **Dashboard Components** (`src/components/features/dashboard/`)
+   - `StatsCards.tsx` - Active signals count, total pulses, alerts today
+   - `RecentActivity.tsx` - Recent pulses and alerts feed (last 5 each)
+
+5. **Server Actions** (`src/actions/`)
+   - `signals.ts` - Full CRUD: create, update, delete, toggle active, trigger scrape, list (filtered/paginated), get by ID
+   - `pulses.ts` - Get pulse by ID with previous pulse for diff
+   - `dashboard.ts` - Stats and recent activity queries
+
+6. **Custom Hooks** (`src/hooks/`)
+   - `useSignalFilters.ts` - URL-based state via `nuqs` (search, status, page)
+
+7. **Deploy Fix** (`7dc6bdc`)
+   - Resolved auth redirect to localhost
+   - Upgraded LLM to gemini-2.5-flash-lite
 
 ### Phase 3: Alert Service - COMPLETE
 
@@ -144,66 +184,76 @@ PulseFlow is an AI-native web scraping engine that monitors web pages ("Signals"
 
 ## Pending Tasks
 
-### Phase 4: Signal Management UI (Next)
+### Phase 5: Production Readiness (Next)
 
-3. **Signal CRUD**
-   - Create signal form (URL, selector, interval, strategy)
-   - Signal list view with status
-   - Edit/delete signals
-   - Manual trigger button
-
-4. **Dashboard Enhancements**
-   - Signal metrics and health status
-   - Recent pulses timeline
-   - Pulse detail view with diff
-   - Scrape history
-
-### Phase 5: Production Readiness
-
-5. **Scheduling**
+1. **Scheduling**
    - Inngest cron functions for periodic scraping
    - Per-signal interval configuration
 
-6. **Monitoring**
+2. **Alert Destination Management UI**
+   - CRUD for email and webhook destinations per signal
+   - Currently alerts display in dashboard but destinations have no management UI
+
+3. **Monitoring**
    - Error tracking
    - Scrape success/failure metrics
    - Rate limit monitoring
+
+4. **Keyword/Content Filtering** (not yet implemented)
+   - Currently the system uses change detection only (new/removed/updated items)
+   - No keyword search or content matching exists yet
 
 ## Directory Structure
 
 ```
 src/
 ├── app/
-│   ├── api/inngest/        # Inngest webhook
-│   ├── auth/               # Auth actions and callbacks
-│   ├── dashboard/          # Protected dashboard
-│   ├── login/              # Login page
-│   └── signup/             # Signup page
+│   ├── api/inngest/            # Inngest webhook
+│   ├── auth/                   # Auth actions and callbacks
+│   ├── dashboard/              # Protected dashboard
+│   │   ├── layout.tsx          # Sidebar + header layout
+│   │   ├── page.tsx            # Overview (stats + activity)
+│   │   ├── signals/
+│   │   │   ├── page.tsx        # Signal list (filtered/paginated)
+│   │   │   └── [id]/page.tsx   # Signal detail + pulse timeline
+│   │   └── pulses/
+│   │       └── [id]/page.tsx   # Pulse detail + diff view
+│   ├── login/                  # Login page
+│   └── signup/                 # Signup page
+├── actions/                    # Server Actions
+│   ├── signals.ts              # Signal CRUD + trigger scrape
+│   ├── pulses.ts               # Pulse queries
+│   └── dashboard.ts            # Stats + recent activity
 ├── components/
-│   ├── ui/                 # Shadcn base components
-│   └── features/           # Feature-specific components
+│   ├── ui/                     # Shadcn base components
+│   └── features/
+│       ├── signals/            # Signal management components
+│       ├── pulses/             # Pulse visualization components
+│       ├── dashboard/          # Stats and activity components
+│       └── UserMenu.tsx        # Auth user menu
+├── hooks/
+│   └── useSignalFilters.ts     # URL state via nuqs
 ├── inngest/
-│   ├── client.ts           # Inngest client
-│   └── functions/          # Background job definitions
+│   ├── client.ts               # Inngest client
+│   └── functions/              # Background job definitions
 ├── lib/
-│   ├── supabase/           # Supabase clients
-│   ├── errors.ts           # Error handling
-│   ├── prisma.ts           # Prisma client singleton
-│   └── utils.ts            # Helper functions
-├── services/
-│   ├── scrapers/           # COMPLETE - Web scraping
-│   │   ├── infrastructure/ # Rate limiter, robots, HTTP
-│   │   ├── providers/      # RSS, Reddit, HN, HTML
-│   │   └── registry/       # Provider factory
-│   ├── llm/                # COMPLETE - LLM integration
-│   │   ├── infrastructure/ # Gemini API client
-│   │   ├── providers/      # Gemini provider
-│   │   └── prompts/        # Summarization prompts
-│   └── alerts/             # COMPLETE - Alert delivery
-│       ├── infrastructure/ # Change detector, email client
-│       ├── providers/      # Webhook, email providers
-│       └── templates/      # Email templates
-└── hooks/                  # Custom React hooks
+│   ├── supabase/               # Supabase clients
+│   ├── errors.ts               # Error handling
+│   ├── prisma.ts               # Prisma client singleton
+│   └── utils.ts                # Helper functions
+└── services/
+    ├── scrapers/               # COMPLETE - Web scraping
+    │   ├── infrastructure/     # Rate limiter, robots, HTTP
+    │   ├── providers/          # RSS, Reddit, HN, HTML
+    │   └── registry/           # Provider factory
+    ├── llm/                    # COMPLETE - LLM integration
+    │   ├── infrastructure/     # Gemini API client
+    │   ├── providers/          # Gemini provider
+    │   └── prompts/            # Summarization prompts
+    └── alerts/                 # COMPLETE - Alert delivery
+        ├── infrastructure/     # Change detector, email client
+        ├── providers/          # Webhook, email providers
+        └── templates/          # Email templates
 ```
 
 ## Key Interfaces
@@ -276,6 +326,9 @@ interface IAlertProvider {
 ## Git History (Recent)
 
 ```
+7dc6bdc fix(deploy): resolve auth redirect to localhost and upgrade to gemini-2.5-flash-lite
+d290604 feat(dashboard): add signal and pulse management UI
+e58273c feat(alerts): add alert service with change detection and delivery
 e5e9778 feat(llm): upgrade to gemini-2.0-flash and add dev scripts
 99d4b1f feat(llm): add LLM service with Gemini provider and Inngest integration
 2b5b4d3 docs: update context.md with Phase 1 completion and next steps

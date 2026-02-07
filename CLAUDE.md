@@ -22,9 +22,9 @@
 - **UI Components:** Use Shadcn/UI for all user-facing components
 - **Icons:** Use @tabler/icons-react exclusively
 - **Naming:**
-  - Components: PascalCase (`SignalCard.tsx`)
-  - Utilities/hooks: camelCase (`useSignalMonitor.ts`)
-  - Types/interfaces: PascalCase with `I` prefix for interfaces when needed
+    - Components: PascalCase (`SignalCard.tsx`)
+    - Utilities/hooks: camelCase (`useSignalMonitor.ts`)
+    - Types/interfaces: PascalCase with `I` prefix for interfaces when needed
 - **File organization:** One component per file, co-locate tests with source
 
 ---
@@ -66,10 +66,10 @@ src/
 
 ```typescript
 interface ScraperOptions {
-  url: string;
-  dryRun?: boolean;  // Required on all scrapers
-  delayMs?: number;  // Default: 2000
-  maxRetries?: number;
+    url: string;
+    dryRun?: boolean; // Required on all scrapers
+    delayMs?: number; // Default: 2000
+    maxRetries?: number;
 }
 ```
 
@@ -82,24 +82,25 @@ Use a unified error handling pattern throughout the codebase:
 ```typescript
 // src/lib/errors.ts
 class AppError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public statusCode: number = 500,
-    public context?: Record<string, unknown>
-  ) {
-    super(message);
-    this.name = 'AppError';
-  }
+    constructor(
+        message: string,
+        public code: string,
+        public statusCode: number = 500,
+        public context?: Record<string, unknown>,
+    ) {
+        super(message);
+        this.name = "AppError";
+    }
 }
 
 // Result pattern for service functions
 type Result<T, E = AppError> =
-  | { success: true; data: T }
-  | { success: false; error: E };
+    | { success: true; data: T }
+    | { success: false; error: E };
 ```
 
 **Rules:**
+
 - Never leave empty catch blocks
 - Always log errors with context before re-throwing or returning
 - Use `Result<T>` pattern for service-layer functions
@@ -123,10 +124,12 @@ chore:    Maintenance tasks, dependency updates
 ```
 
 **Workflow:**
+
 1. Complete and test the feature locally
 2. Stage changes: `git add <specific-files>`
 3. Commit with conventional format: `git commit -m "feat(scraper): add dry-run mode to signal monitor"`
-4. Push and create PR via gh CLI: `gh pr create --fill`
+4. Do not add Co-Authored to commit messages
+5. Push and create PR via gh CLI: `gh pr create --fill`
 
 ---
 
@@ -158,13 +161,13 @@ async function SignalList() {
 1. **No `any` type:** Use `unknown` and narrow types explicitly
 2. **Dependency checks:** Before suggesting a new library, verify it exists in `package.json`
 3. **Technical Design requirement:** For complex tasks, write a Technical Design comment in the CLI before implementation:
-   ```
-   // TECHNICAL DESIGN: [Feature Name]
-   // Problem: ...
-   // Approach: ...
-   // Files affected: ...
-   // Edge cases: ...
-   ```
+    ```
+    // TECHNICAL DESIGN: [Feature Name]
+    // Problem: ...
+    // Approach: ...
+    // Files affected: ...
+    // Edge cases: ...
+    ```
 4. **No unused code:** Remove dead code, don't comment it out
 5. **Environment variables:** All secrets via `.env.local`, typed in `src/lib/env.ts`
 
@@ -174,29 +177,29 @@ async function SignalList() {
 
 ```bash
 # Development
-pnpm dev                    # Start dev server
-pnpm build                  # Production build
-pnpm lint                   # Run ESLint
-pnpm typecheck              # Run TypeScript compiler check
+npm dev                    # Start dev server
+npm build                  # Production build
+npm lint                   # Run ESLint
+npm typecheck              # Run TypeScript compiler check
 
 # Database
-pnpm prisma generate        # Generate Prisma client
-pnpm prisma db push         # Push schema to DB
-pnpm prisma studio          # Open Prisma Studio
+npm prisma generate        # Generate Prisma client
+npm prisma db push         # Push schema to DB
+npm prisma studio          # Open Prisma Studio
 
 # Inngest
-pnpm inngest-cli dev        # Local Inngest dev server
+npm inngest-cli dev        # Local Inngest dev server
 ```
 
 ---
 
 ## File Naming Conventions
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `SignalCard.tsx` |
-| Hooks | camelCase with `use` prefix | `useSignalMonitor.ts` |
-| Utilities | camelCase | `formatDate.ts` |
-| Types | PascalCase | `Signal.types.ts` |
-| Server Actions | camelCase with `action` suffix | `createSignalAction.ts` |
-| Inngest Functions | kebab-case | `process-signal.ts` |
+| Type              | Convention                     | Example                 |
+| ----------------- | ------------------------------ | ----------------------- |
+| Components        | PascalCase                     | `SignalCard.tsx`        |
+| Hooks             | camelCase with `use` prefix    | `useSignalMonitor.ts`   |
+| Utilities         | camelCase                      | `formatDate.ts`         |
+| Types             | PascalCase                     | `Signal.types.ts`       |
+| Server Actions    | camelCase with `action` suffix | `createSignalAction.ts` |
+| Inngest Functions | kebab-case                     | `process-signal.ts`     |
