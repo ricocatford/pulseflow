@@ -18,19 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getRecentActivity } from "@/actions/dashboard";
 import { SignalFormDialog } from "@/components/features/signals/SignalFormDialog";
-
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
+import { RelativeTime } from "@/components/features/dashboard/RelativeTime";
 
 export async function RecentActivity() {
   const result = await getRecentActivity();
@@ -102,9 +90,10 @@ export async function RecentActivity() {
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatRelativeTime(pulse.createdAt)}
-                  </span>
+                  <RelativeTime
+                    date={pulse.createdAt}
+                    className="text-xs text-muted-foreground whitespace-nowrap"
+                  />
                 </div>
               ))}
               <Link
@@ -161,9 +150,10 @@ export async function RecentActivity() {
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatRelativeTime(alert.createdAt)}
-                  </span>
+                  <RelativeTime
+                    date={alert.createdAt}
+                    className="text-xs text-muted-foreground whitespace-nowrap"
+                  />
                 </div>
               ))}
             </div>

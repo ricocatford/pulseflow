@@ -39,6 +39,7 @@ export const scrapeSignal = inngest.createFunction(
     id: "scrape-signal",
     name: "Scrape Signal",
     retries: 0, // We handle retries internally
+    concurrency: [{ limit: 1, key: "event.data.signalId" }],
   },
   { event: "signal/scrape.requested" },
   async ({ event, step }) => {

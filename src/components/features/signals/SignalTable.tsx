@@ -13,6 +13,9 @@ import {
   IconTrash,
   IconExternalLink,
 } from "@tabler/icons-react";
+import { usePollingRefresh } from "@/hooks/usePollingRefresh";
+import { useRelativeTime } from "@/hooks/useRelativeTime";
+import { RelativeTime } from "@/components/features/dashboard/RelativeTime";
 import {
   Table,
   TableBody,
@@ -43,20 +46,6 @@ interface SignalTableProps {
   signals: Signal[];
 }
 
-function formatRelativeTime(date: Date | null): string {
-  if (!date) return "Never";
-  const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
-
 function formatInterval(minutes: number): string {
   if (minutes < 60) return `Every ${minutes} mins`;
   const hours = minutes / 60;
@@ -72,6 +61,8 @@ export function SignalTable({ signals }: SignalTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
+  const { startPolling } = usePollingRefresh();
+  useRelativeTime();
 
   const handleToggle = (id: string, currentStatus: boolean) => {
     startTransition(async () => {
@@ -92,6 +83,7 @@ export function SignalTable({ signals }: SignalTableProps) {
     startTransition(async () => {
       await triggerSignalScrape(id);
       router.refresh();
+      startPolling();
     });
   };
 
@@ -149,7 +141,7 @@ export function SignalTable({ signals }: SignalTableProps) {
                 <SignalStatusBadge isActive={signal.isActive} />
               </TableCell>
               <TableCell className="hidden lg:table-cell text-muted-foreground">
-                {formatRelativeTime(signal.lastScrapedAt)}
+                <RelativeTime date={signal.lastScrapedAt} />
               </TableCell>
               <TableCell>
                 <DropdownMenu>
