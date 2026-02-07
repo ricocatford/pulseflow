@@ -38,12 +38,21 @@ export function UserMenu({ email, displayName }: UserMenuProps) {
                     className="gap-2 cursor-pointer"
                 >
                     <IconUser className="h-4 w-4" />
-                    <span className="text-sm text-muted-foreground">
+                    <span className="hidden xs:inline text-sm text-muted-foreground">
                         {displayName ?? email}
                     </span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+                {displayName && (
+                    <>
+                        <div className="px-2 py-1.5">
+                            <p className="text-sm font-medium">{displayName}</p>
+                            <p className="text-xs text-muted-foreground">{email}</p>
+                        </div>
+                        <DropdownMenuSeparator />
+                    </>
+                )}
                 <DropdownMenuItem asChild>
                     <Link
                         href={"/dashboard/account" as Route}

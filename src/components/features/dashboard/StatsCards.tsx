@@ -68,7 +68,7 @@ export async function StatsCards() {
                                 {stat.description}
                             </CardDescription>
                         </div>
-                        <stat.icon className="h-10 w-10 text-muted-foreground" />
+                        <stat.icon className="h-8 w-8 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <p className="text-4xl font-bold">{stat.value}</p>

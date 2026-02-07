@@ -7,7 +7,7 @@ import { SignalFormDialog } from "@/components/features/signals/SignalFormDialog
 export default async function DashboardPage() {
     return (
         <>
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex items-center justify-between max-[520px]:flex-col max-[520px]:items-stretch max-[520px]:gap-4">
                 <div>
                     <h1 className="text-3xl font-bold">Dashboard</h1>
                     <p className="text-muted-foreground">

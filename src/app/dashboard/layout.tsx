@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { UserMenu } from "@/components/features/UserMenu";
 import { SidebarActions } from "@/components/features/SidebarActions";
+import { MobileMenu } from "@/components/features/MobileMenu";
 import { Separator } from "@/components/ui/separator";
 
 interface DashboardLayoutProps {
@@ -65,31 +66,38 @@ export default async function DashboardLayout({
                         <IconActivity className="h-6 w-6" />
                         <span className="text-xl font-semibold">PulseFlow</span>
                     </Link>
-                    <UserMenu email={user.email ?? ""} displayName={displayName} />
+                    <div className="flex items-center gap-2">
+                        <UserMenu
+                            email={user.email ?? ""}
+                            displayName={displayName}
+                        />
+                        <MobileMenu />
+                    </div>
                 </div>
             </header>
 
             <div className="flex">
                 {/* Sidebar */}
-                <aside className="hidden w-64 shrink-0 border-r bg-muted/30 md:block h-[calc(100vh-65px)]">
-                    <nav className="flex flex-col gap-1 p-4">
+                <aside className="hidden xs:block xs:w-14 md:w-64 shrink-0 border-r bg-muted/30 min-h-[calc(100vh-65px)]">
+                    <nav className="flex flex-col gap-1 p-2 md:p-4">
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href as Route}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                className="flex items-center justify-center md:justify-start gap-3 rounded-lg px-2 md:px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                title={item.label}
                             >
-                                <item.icon className="h-4 w-4" />
-                                {item.label}
+                                <item.icon className="h-4 w-4 shrink-0" />
+                                <span className="hidden md:inline">{item.label}</span>
                             </Link>
                         ))}
                     </nav>
                     <Separator />
-                    <div className="p-4">
+                    <div className="p-2 md:p-4">
                         <SidebarActions />
                     </div>
-                    <Separator />
-                    <div className="p-4">
+                    <Separator className="hidden md:block" />
+                    <div className="hidden md:block p-4">
                         <p className="text-xs text-muted-foreground">
                             Monitor web changes and get AI-powered alerts
                         </p>
