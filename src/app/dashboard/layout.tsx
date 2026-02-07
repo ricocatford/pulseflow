@@ -5,10 +5,11 @@ import {
     IconActivity,
     IconLayoutDashboard,
     IconRadar,
-    IconSettings,
 } from "@tabler/icons-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { UserMenu } from "@/components/features/UserMenu";
+import { SidebarActions } from "@/components/features/SidebarActions";
 import { Separator } from "@/components/ui/separator";
 
 interface DashboardLayoutProps {
@@ -26,11 +27,6 @@ const navItems = [
         label: "Signals",
         icon: IconRadar,
     },
-    {
-        href: "/dashboard/settings",
-        label: "Settings",
-        icon: IconSettings,
-    },
 ];
 
 export default async function DashboardLayout({
@@ -45,6 +41,21 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
+    let displayName: string | null = null;
+    try {
+        const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { firstName: true, lastName: true },
+        });
+        if (dbUser?.firstName || dbUser?.lastName) {
+            displayName = [dbUser.firstName, dbUser.lastName]
+                .filter(Boolean)
+                .join(" ");
+        }
+    } catch (error) {
+        console.error("[DashboardLayout] Failed to fetch user profile:", error);
+    }
+
     return (
         <div className="min-h-screen bg-background">
             {/* Header */}
@@ -54,7 +65,7 @@ export default async function DashboardLayout({
                         <IconActivity className="h-6 w-6" />
                         <span className="text-xl font-semibold">PulseFlow</span>
                     </Link>
-                    <UserMenu email={user.email ?? ""} />
+                    <UserMenu email={user.email ?? ""} displayName={displayName} />
                 </div>
             </header>
 
@@ -73,6 +84,10 @@ export default async function DashboardLayout({
                             </Link>
                         ))}
                     </nav>
+                    <Separator />
+                    <div className="p-4">
+                        <SidebarActions />
+                    </div>
                     <Separator />
                     <div className="p-4">
                         <p className="text-xs text-muted-foreground">
