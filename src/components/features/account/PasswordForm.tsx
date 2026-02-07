@@ -107,8 +107,8 @@ export function PasswordForm() {
             />
           </div>
 
-          <div className="flex justify-end pt-2">
-            <Button type="submit" disabled={isPending}>
+          <div className="flex flex-col xs:flex-row xs:justify-end pt-2">
+            <Button type="submit" disabled={isPending} className="w-full xs:w-auto">
               {isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
               Update password
             </Button>

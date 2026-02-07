@@ -64,7 +64,7 @@ export function ProfileForm({ email, firstName, lastName }: ProfileFormProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First name</Label>
               <Input
@@ -93,8 +93,8 @@ export function ProfileForm({ email, firstName, lastName }: ProfileFormProps) {
             </p>
           </div>
 
-          <div className="flex justify-end pt-2">
-            <Button type="submit" disabled={isPending}>
+          <div className="flex flex-col xs:flex-row xs:justify-end pt-2">
+            <Button type="submit" disabled={isPending} className="w-full xs:w-auto">
               {isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
               Save changes
             </Button>
