@@ -78,26 +78,26 @@ export default async function DashboardLayout({
 
             <div className="flex">
                 {/* Sidebar */}
-                <aside className="hidden xs:block xs:w-14 md:w-64 shrink-0 border-r bg-muted/30 min-h-[calc(100vh-65px)]">
-                    <nav className="flex flex-col gap-1 p-2 md:p-4">
+                <aside className="hidden xs:block xs:w-14 lg:w-64 shrink-0 border-r bg-muted/30 min-h-[calc(100vh-65px)]">
+                    <nav className="flex flex-col gap-1 p-2 lg:p-4">
                         {navItems.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href as Route}
-                                className="flex items-center justify-center md:justify-start gap-3 rounded-lg px-2 md:px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                className="flex items-center justify-center lg:justify-start gap-3 rounded-lg px-2 lg:px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                                 title={item.label}
                             >
                                 <item.icon className="h-4 w-4 shrink-0" />
-                                <span className="hidden md:inline">{item.label}</span>
+                                <span className="hidden lg:inline">{item.label}</span>
                             </Link>
                         ))}
                     </nav>
                     <Separator />
-                    <div className="p-2 md:p-4">
+                    <div className="p-2 lg:p-4">
                         <SidebarActions />
                     </div>
-                    <Separator className="hidden md:block" />
-                    <div className="hidden md:block p-4">
+                    <Separator className="hidden lg:block" />
+                    <div className="hidden lg:block p-4">
                         <p className="text-xs text-muted-foreground">
                             Monitor web changes and get AI-powered alerts
                         </p>

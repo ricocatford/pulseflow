@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { SignalStatusBadge } from "./SignalStatusBadge";
 import { StrategyBadge } from "./StrategyBadge";
 import { SignalFormDialog } from "./SignalFormDialog";
+import { ConfirmDialog } from "@/components/features/ConfirmDialog";
 import {
   deleteSignal,
   toggleSignalActive,
@@ -61,6 +62,7 @@ export function SignalTable({ signals }: SignalTableProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
+  const [deletingSignalId, setDeletingSignalId] = useState<string | null>(null);
   const { startPolling } = usePollingRefresh();
   useRelativeTime();
 
@@ -71,10 +73,15 @@ export function SignalTable({ signals }: SignalTableProps) {
     });
   };
 
-  const handleDelete = (id: string) => {
-    if (!confirm("Are you sure you want to delete this signal?")) return;
+  const handleDeleteClick = (id: string) => {
+    setDeletingSignalId(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deletingSignalId) return;
     startTransition(async () => {
-      await deleteSignal(id);
+      await deleteSignal(deletingSignalId);
+      setDeletingSignalId(null);
       router.refresh();
     });
   };
@@ -181,7 +188,7 @@ export function SignalTable({ signals }: SignalTableProps) {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => handleDelete(signal.id)}
+                      onClick={() => handleDeleteClick(signal.id)}
                       className="text-destructive focus:text-destructive"
                     >
                       <IconTrash className="h-4 w-4" />
@@ -202,6 +209,19 @@ export function SignalTable({ signals }: SignalTableProps) {
           onOpenChange={(open) => !open && setEditingSignal(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={!!deletingSignalId}
+        onOpenChange={(open) => {
+          if (!open && !isPending) setDeletingSignalId(null);
+        }}
+        title="Delete Signal"
+        description="Are you sure you want to delete this signal? This will permanently remove all associated pulses and alerts. This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        isPending={isPending}
+        onConfirm={handleDeleteConfirm}
+      />
     </>
   );
 }
