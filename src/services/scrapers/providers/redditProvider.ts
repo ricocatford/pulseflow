@@ -47,7 +47,11 @@ async function scrapeReddit(options: ScraperOptions): Promise<{ success: true; d
   const { url } = options;
   const jsonUrl = toJsonUrl(url);
 
-  const response = await httpGetJson<RedditListing>(jsonUrl);
+  const response = await httpGetJson<RedditListing>(jsonUrl, {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    },
+  });
 
   const items = response.data.children.map((post) => ({
     title: post.data.title,
